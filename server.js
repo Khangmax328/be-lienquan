@@ -23,3 +23,4 @@ require('./src/routes')(app);  // Đảm bảo tất cả route được định
 app.listen(PORT, () => {
   console.log(`Server chạy tại http://localhost:${PORT}`);
 });
+console.log("Backend running");
