@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
 dotenv.config();  // Đọc các giá trị từ file .env
 require('./src/config/db');  // Kết nối MongoDB
-require('./src/config/db')(); 
+require('./src/config/db')();
 const express = require('express');
 const cors = require('cors');  // Import cors
 const app = express();
@@ -14,7 +14,13 @@ const allowedOrigins = [
   "https://fe-lienquan.onrender.com"
 ];
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: "GET,POST,PUT,DELETE",
   credentials: true,
 }));
