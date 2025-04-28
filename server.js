@@ -9,11 +9,15 @@ const PORT = process.env.PORT || 5000;
 
 // Sử dụng CORS cho toàn bộ ứng dụng
 // app.use(cors());  // Mở cho tất cả các domain (có thể cấu hình chi tiết nếu cần)
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://fe-lienquan.onrender.com"
+];
 app.use(cors({
-    origin: "http://localhost:3000", // URL của frontend
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true,
-  }));
+  origin: allowedOrigins,
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true,
+}));
 // Cấu hình middleware
 app.use(express.json());  // Để xử lý các request body kiểu JSON
 
