@@ -10,11 +10,12 @@ const PORT = process.env.PORT || 5000;
 // Sử dụng CORS cho toàn bộ ứng dụng
 // app.use(cors());  // Mở cho tất cả các domain (có thể cấu hình chi tiết nếu cần)
 const allowedOrigins = [
+  "http://localhost:3000", 
   "http://shopkhanglienquan.com",
   "https://shopkhanglienquan.com",
   "http://www.shopkhanglienquan.com",
   "https://www.shopkhanglienquan.com",
-  "https://fe-lienquan.onrender.com"
+  "https://fe-lienquan.onrender.com",
 ];
 
 app.use(cors({

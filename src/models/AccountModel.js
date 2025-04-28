@@ -6,7 +6,7 @@ const accountSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   champions: { type: Number, default: 0 },
   skins: { type: Number, default: 0 },
-  gems: { type: Number, default: 90 },
+  gems: { type: Number, default: 0 },
   rank: { type: String, default: '' },
 
   // Ảnh đại diện (hiển thị ở Home)
