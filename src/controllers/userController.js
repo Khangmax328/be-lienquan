@@ -69,7 +69,7 @@ const getAllUsers = async (req, res) => {
 
 // Admin: xoá user
 const deleteUser = async (req, res) => {
-  console.log('ID nhận được:', req.params.id)
+  // console.log('ID nhận được:', req.params.id)
   try {
     const deleted = await User.findByIdAndDelete(req.params.id)
     if (!deleted) return res.status(404).json({ message: 'User không tồn tại' })

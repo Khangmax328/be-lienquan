@@ -101,7 +101,7 @@ const getAllAccounts = async (req, res) => {
           ? 'name type price champions skins gems rank username password authCode isSold createdAt updatedAt image'
           : 'name type price champions skins gems rank isSold createdAt updatedAt image'
       )
-      
+
       .sort(sortQuery) // 🆕
       .skip((page - 1) * limit)
       .limit(Number(limit));
@@ -164,7 +164,7 @@ const getAccountsExcludeLucky = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Lỗi lấy acc không thuộc thử vận may', error: error.message });
   }
-};  
+};
 
 const getAccountById = async (req, res) => {
   try {
@@ -227,24 +227,45 @@ const deleteAccount = async (req, res) => {
 // 🆕 API chỉ dành cho Admin
 const getAllAccountsForAdmin = async (req, res) => {
   try {
-    const { page = 1, limit = 20000, sortPrice } = req.query;
+    const { page = 1, limit = 50, sortPrice, soldStatus } = req.query;
 
-    const query = {}; // không lọc isSold
+    // Khởi tạo query mặc định
+    const query = {};
 
+    // Lọc theo trạng thái bán nếu có
+    if (soldStatus) {
+      if (soldStatus === 'sold') {
+        query.isSold = true;
+      } else if (soldStatus === 'unsold') {
+        query.isSold = false;
+      }
+    }
+
+    // Sắp xếp theo giá nếu có
     const sortQuery = {};
     if (sortPrice === 'asc') sortQuery.price = 1;
     else if (sortPrice === 'desc') sortQuery.price = -1;
+
+    // Lọc theo username nếu có
     if (req.query.username) {
       query.username = { $regex: req.query.username, $options: 'i' }; // không phân biệt hoa thường
     }
-    const total = await Account.countDocuments(query);
-    const accounts = await Account.find(query)
-      .populate('type', 'name')
-      .select('name type price champions skins gems rank username password authCode isSold createdAt updatedAt image')
-      .sort(sortQuery)
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
 
+    // Kiểm tra lại query để xác nhận đúng lọc
+    console.log('Query:', query);
+
+    // Tính tổng số tài khoản phù hợp với query
+    const total = await Account.countDocuments(query);
+
+    // Lấy các tài khoản theo query
+    const accounts = await Account.find(query)
+      .populate('type', 'name')  // Tải dữ liệu từ loại tài khoản
+      .select('name type price champions skins gems rank username password authCode isSold createdAt updatedAt image')
+      .sort(sortQuery) // Áp dụng sắp xếp theo giá
+      .skip((page - 1) * limit) // Bỏ qua các tài khoản trước trang hiện tại
+      .limit(Number(limit)); // Giới hạn số lượng tài khoản trên mỗi trang
+
+    // Trả về kết quả
     res.status(200).json({
       total,
       currentPage: Number(page),
@@ -255,6 +276,9 @@ const getAllAccountsForAdmin = async (req, res) => {
     res.status(500).json({ message: 'Lỗi lấy danh sách acc (admin)', error: error.message });
   }
 };
+
+
+
 
 
 

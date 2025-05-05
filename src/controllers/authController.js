@@ -40,7 +40,7 @@ const register = async (req, res) => {
       const token = jwt.sign(
         { id: user._id, isAdmin: user.isAdmin },
         process.env.JWT_SECRET || 'SECRET_KEY',
-        { expiresIn: '3d' }
+        { expiresIn: '1h' }
       )
   
       const { password: pw, ...userData } = user._doc
