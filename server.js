@@ -16,6 +16,7 @@ const allowedOrigins = [
   "http://www.shopkhanglienquan.com",
   "https://www.shopkhanglienquan.com",
   "https://fe-lienquan.onrender.com",
+  "https://lienquanshop-97dac72c4429.herokuapp.com"
 ];
 
 app.use(cors({
