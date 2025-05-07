@@ -47,7 +47,7 @@ const getUserProfile = async (req, res) => {
 // Admin: lấy danh sách tất cả người dùng
 const getAllUsers = async (req, res) => {
   try {
-    const { page = 1, limit = 10, email = '' } = req.query;
+    const { page = 1, limit = 50, email = '' } = req.query;
     const query = email ? { email: { $regex: email, $options: 'i' } } : {};
 
     const total = await User.countDocuments(query);
