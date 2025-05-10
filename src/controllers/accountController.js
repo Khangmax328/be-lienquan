@@ -116,6 +116,40 @@ const getAllAccounts = async (req, res) => {
     res.status(500).json({ message: 'Lỗi lấy danh sách acc', error: error.message });
   }
 };
+
+const getAllAccountsLanding = async (req, res) => {
+  try {
+    const { type, rank } = req.query;  // Chỉ lấy các query cần thiết
+
+    const query = { isSold: false };  // Điều kiện mặc định là tài khoản chưa bán
+
+    // Bộ lọc theo loại tài khoản
+    if (type) query.type = type;
+
+    // Bộ lọc theo rank
+    if (rank && rank !== 'Tất cả rank') {
+      query.rank = decodeURIComponent(rank).trim();
+    }
+
+    // Lấy tổng số tài khoản
+    const total = await Account.countDocuments(query);
+
+    // Lấy danh sách tài khoản chỉ với trường '_id'
+    const accounts = await Account.find(query)
+      .select('_id')  // Chỉ lấy trường '_id' để dữ liệu nhẹ hơn
+      .lean();  // Sử dụng lean() để trả về dữ liệu đơn giản, tránh overhead từ các mô hình mongoose
+
+    // Trả về kết quả
+    res.status(200).json({
+      total,
+      accounts
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi lấy danh sách acc', error: error.message });
+  }
+};
+
+
 const getAccountsExcludeLucky = async (req, res) => {
   try {
     const { page = 1, limit = 50, minPrice, maxPrice, rank, sortPrice } = req.query;
@@ -290,5 +324,5 @@ module.exports = {
   updateAccount,
   deleteAccount,
   getAllAccountsForAdmin,
-  getAccountsExcludeLucky
+  getAccountsExcludeLucky,getAllAccountsLanding
 } 
