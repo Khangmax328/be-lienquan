@@ -134,9 +134,9 @@ const getAllAccountsLanding = async (req, res) => {
     // Lấy tổng số tài khoản
     const total = await Account.countDocuments(query);
 
-    // Lấy danh sách tài khoản chỉ với trường '_id'
+    // Lấy danh sách tài khoản chỉ với các trường '_id' và 'type'
     const accounts = await Account.find(query)
-      .select('_id')  // Chỉ lấy trường '_id' để dữ liệu nhẹ hơn
+      .select('_id type')  // Chỉ lấy các trường '_id' và 'type'
       .lean();  // Sử dụng lean() để trả về dữ liệu đơn giản, tránh overhead từ các mô hình mongoose
 
     // Trả về kết quả
@@ -148,6 +148,7 @@ const getAllAccountsLanding = async (req, res) => {
     res.status(500).json({ message: 'Lỗi lấy danh sách acc', error: error.message });
   }
 };
+
 
 
 const getAccountsExcludeLucky = async (req, res) => {
