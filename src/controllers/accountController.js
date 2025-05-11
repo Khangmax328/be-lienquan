@@ -149,6 +149,32 @@ const getAllAccountsLanding = async (req, res) => {
   }
 };
 
+  const getAllstatus = async (req, res) => { 
+  try {
+    const { type, rank } = req.query;  
+
+    const query = {};  
+
+    if (type) query.type = type;
+    if (rank && rank !== 'Tất cả rank') {
+      query.rank = decodeURIComponent(rank).trim();
+    }
+    const total = await Account.countDocuments(query);
+    const soldTotal = await Account.countDocuments({ ...query, isSold: true });
+    const unsoldTotal = await Account.countDocuments({ ...query, isSold: false });
+
+    res.status(200).json({
+      total,         // Tổng số tài khoản
+      soldTotal,     // Tổng số tài khoản đã bán
+      unsoldTotal,   // Tổng số tài khoản chưa bán
+      // accounts       
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi lấy danh sách acc', error: error.message });
+  }
+};
+
+
 
 
 const getAccountsExcludeLucky = async (req, res) => {
@@ -325,5 +351,5 @@ module.exports = {
   updateAccount,
   deleteAccount,
   getAllAccountsForAdmin,
-  getAccountsExcludeLucky,getAllAccountsLanding
+  getAccountsExcludeLucky,getAllAccountsLanding,getAllstatus
 } 

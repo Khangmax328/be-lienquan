@@ -58,12 +58,15 @@ const getAllUsers = async (req, res) => {
 
     res.status(200).json({
       users,
+      total,
       totalPages: Math.ceil(total / limit),
       currentPage: Number(page),
     });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi lấy danh sách user', error: err.message });
   }
+    
+
 };
 
 

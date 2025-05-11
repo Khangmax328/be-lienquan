@@ -10,7 +10,8 @@ const {
   deleteAccount,
   getAllAccountsForAdmin,
   getAccountsExcludeLucky,
-  getAllAccountsLanding
+  getAllAccountsLanding,
+  getAllstatus
 } = require('../controllers/accountController')
 
 // [POST] Tạo acc – chỉ admin
@@ -29,6 +30,8 @@ router.get('/admin', verifyToken, verifyAdmin, getAllAccountsForAdmin);
 router.get('/exclude-lucky', getAccountsExcludeLucky);
 router.get('/', getAllAccounts)
 router.get('/getall',getAllAccountsLanding)
+router.get('/getallStatus',getAllstatus)
+
 router.get('/:id', getAccountById)
 router.put('/:id',verifyToken, verifyAdmin, updateAccount)
 router.delete('/:id',verifyToken, verifyAdmin, deleteAccount)
