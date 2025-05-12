@@ -149,6 +149,7 @@ const getAllAccountsLanding = async (req, res) => {
   }
 };
 
+
   const getAllstatus = async (req, res) => { 
   try {
     const { type, rank } = req.query;  
@@ -174,7 +175,23 @@ const getAllAccountsLanding = async (req, res) => {
   }
 };
 
-
+const getTotalByCategory = async (req, res) => {
+  try {
+    const categories = await Category.find();
+    const result = {};
+    for (const category of categories) {
+      const count = await Account.countDocuments({
+        type: category._id,
+        isSold: false
+      });
+      result[category.name] = count;
+    }
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Lỗi khi tính toán tổng số tài khoản:', error);
+    res.status(500).json({ message: 'Lỗi tính toán tổng số tài khoản', error: error.message });
+  }
+};
 
 
 const getAccountsExcludeLucky = async (req, res) => {
@@ -339,11 +356,6 @@ const getAllAccountsForAdmin = async (req, res) => {
 };
 
 
-
-
-
-
-
 module.exports = {
   createAccount,
   getAllAccounts,
@@ -351,5 +363,5 @@ module.exports = {
   updateAccount,
   deleteAccount,
   getAllAccountsForAdmin,
-  getAccountsExcludeLucky,getAllAccountsLanding,getAllstatus
+  getAccountsExcludeLucky,getAllAccountsLanding,getAllstatus, getTotalByCategory
 } 

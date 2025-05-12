@@ -11,7 +11,8 @@ const {
   getAllAccountsForAdmin,
   getAccountsExcludeLucky,
   getAllAccountsLanding,
-  getAllstatus
+  getAllstatus,
+  getTotalByCategory
 } = require('../controllers/accountController')
 
 // [POST] Tạo acc – chỉ admin
@@ -30,7 +31,8 @@ router.get('/admin', verifyToken, verifyAdmin, getAllAccountsForAdmin);
 router.get('/exclude-lucky', getAccountsExcludeLucky);
 router.get('/', getAllAccounts)
 router.get('/getall',getAllAccountsLanding)
-router.get('/getallStatus',getAllstatus)
+router.get('/getallStatus',verifyToken, verifyAdmin,getAllstatus)
+router.get('/totalByCategory', getTotalByCategory);
 
 router.get('/:id', getAccountById)
 router.put('/:id',verifyToken, verifyAdmin, updateAccount)
