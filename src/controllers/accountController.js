@@ -175,17 +175,21 @@ const getAllAccountsLanding = async (req, res) => {
   }
 };
 
+
 const getTotalByCategory = async (req, res) => {
   try {
     const categories = await Category.find();
-    const result = {};
-    for (const category of categories) {
-      const count = await Account.countDocuments({
+    const promises = categories.map(category => 
+      Account.countDocuments({
         type: category._id,
         isSold: false
-      });
-      result[category.name] = count;
-    }
+      }).then(count => ({ name: category.name, count }))
+    );
+    const results = await Promise.all(promises);
+    const result = results.reduce((acc, { name, count }) => {
+      acc[name] = count;
+      return acc;
+    }, {});
     res.status(200).json(result);
   } catch (error) {
     console.error('Lỗi khi tính toán tổng số tài khoản:', error);
