@@ -28,10 +28,10 @@ router.post(
   createAccount
 )
 router.get('/admin', verifyToken, verifyAdmin, getAllAccountsForAdmin);
+router.get('/getallStatus',getAllstatus)
 router.get('/exclude-lucky', getAccountsExcludeLucky);
 router.get('/', getAllAccounts)
 router.get('/getall',getAllAccountsLanding)
-router.get('/getallStatus',verifyToken, verifyAdmin,getAllstatus)
 router.get('/totalByCategory', getTotalByCategory);
 
 router.get('/:id', getAccountById)
