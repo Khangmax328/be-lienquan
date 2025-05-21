@@ -1,11 +1,49 @@
 const Card = require('../models/CardModel');
 const User = require('../models/UserModel');
+const nodemailer = require('nodemailer');
 
-// Người dùng nạp thẻ
+// Cấu hình transporter gửi mail qua Gmail
+const transporter = nodemailer.createTransport({
+  service: 'gmail',  // Hoặc SMTP server bạn dùng
+  auth: {
+    user: process.env.EMAIL_USER,      // Email gửi
+    pass: process.env.EMAIL_PASSWORD,  // Mật khẩu hoặc app password
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
+// Hàm gửi mail báo cáo nạp thẻ
+async function sendCardReportEmail(cardData) {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: 'giadanghuynh2@gmail.com',  // Email nhận báo cáo
+    subject: `Báo cáo nạp thẻ mới từ ${cardData.provider}`,
+    text: `
+Người dùng đã nạp thẻ:
+- Nhà mạng: ${cardData.provider}
+- Mệnh giá: ${cardData.amount} VNĐ
+- Mã thẻ: ${cardData.cardCode}
+- Serial: ${cardData.serial}
+- Thời gian: ${new Date().toLocaleString()}
+    `
+  };
+
+  try {
+    let info = await transporter.sendMail(mailOptions);
+    console.log('Mail báo cáo đã gửi:', info.response);
+  } catch (error) {
+    console.error('Lỗi gửi mail báo cáo:', error);
+    // Nếu muốn lỗi mail không ảnh hưởng flow, không throw lỗi ra
+  }
+}
+
+// API người dùng nạp thẻ
 const createCard = async (req, res) => {
   try {
     const { provider, amount, cardCode, serial } = req.body;
-    const userEmail = req.user.email; // Lấy email từ token hoặc session
+    const userEmail = req.user.email; // Lấy email user từ token/session
 
     if (!provider || !amount || !cardCode || !serial) {
       return res.status(400).json({ message: 'Vui lòng nhập đầy đủ thông tin thẻ' });
@@ -16,11 +54,18 @@ const createCard = async (req, res) => {
       amount,
       cardCode,
       serial,
-      userEmail,   // Lưu email ở đây
+      userEmail,
       status: 'pending',
     });
 
     await newCard.save();
+
+    // Gửi mail báo cáo (bỏ try/catch riêng để tránh lỗi mail làm hỏng API)
+    try {
+      await sendCardReportEmail(newCard);
+    } catch (mailError) {
+      console.error('Lỗi gửi mail báo cáo:', mailError);
+    }
 
     return res.status(201).json({ message: 'Nạp thẻ thành công, trạng thái đang chờ xử lý', card: newCard });
   } catch (error) {
@@ -29,7 +74,9 @@ const createCard = async (req, res) => {
   }
 };
 
-// Người dùng lấy tất cả thẻ của mình, phân trang
+// Các API khác...
+
+// Người dùng lấy thẻ của mình, phân trang
 const getUserCards = async (req, res) => {
   try {
     const userEmail = req.user.email;
@@ -54,7 +101,7 @@ const getUserCards = async (req, res) => {
   }
 };
 
-// Admin lấy tất cả thẻ của tất cả user, phân trang
+// Admin lấy tất cả thẻ, phân trang
 const getAllCards = async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
@@ -78,7 +125,7 @@ const getAllCards = async (req, res) => {
   }
 };
 
-// Admin lấy chi tiết thẻ kèm thông tin người dùng (join qua email)
+// Admin lấy chi tiết thẻ kèm info user
 const getAllCardDetails = async (req, res) => {
   try {
     const cards = await Card.aggregate([
@@ -89,7 +136,7 @@ const getAllCardDetails = async (req, res) => {
           foreignField: 'email',
           as: 'userInfo',
           pipeline: [
-            { $project: { email: 1, balance: 1, _id: 0 } } // chỉ lấy email và balance
+            { $project: { email: 1, balance: 1, _id: 0 } }
           ]
         },
       },
@@ -104,8 +151,7 @@ const getAllCardDetails = async (req, res) => {
   }
 };
 
-
-// Admin chỉnh sửa trạng thái thẻ
+// Admin cập nhật trạng thái thẻ
 const updateCardStatus = async (req, res) => {
   try {
     const { cardId } = req.params;
@@ -120,10 +166,8 @@ const updateCardStatus = async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy thẻ' });
     }
 
-    // Cập nhật trạng thái thẻ
     card.status = status;
 
-    // Cập nhật balance nếu có, và update luôn User tương ứng
     if (balance !== undefined) {
       const user = await User.findOne({ email: card.userEmail });
       if (!user) {
@@ -142,7 +186,7 @@ const updateCardStatus = async (req, res) => {
   }
 };
 
-// Admin xoá card theo ID
+// Admin xoá thẻ theo ID
 const deleteCard = async (req, res) => {
   try {
     const { cardId } = req.params;
@@ -166,5 +210,6 @@ module.exports = {
   getAllCards,
   getAllCardDetails,
   updateCardStatus,
-  deleteCard
+  deleteCard,
+  sendCardReportEmail,
 };
