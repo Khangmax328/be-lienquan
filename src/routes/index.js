@@ -9,6 +9,8 @@ const uploadRoutes = require('./uploadRoutes')
 const adminStatsRoutes = require('./adminStatsRoutes')
 const BalanceHistoryRouter = require('./balanceHistoryRoutes')
 const PaymentInfoRoutes = require('./paymentInfoRoutes')
+const CardRoutes = require('./cardRoutes')
+
 
 const routes = (app) => {
   app.use('/api/admin/users', UserAdminRoutes)
@@ -22,6 +24,8 @@ const routes = (app) => {
   app.use('/api/admin', adminStatsRoutes)
   app.use('/api/balance-history', BalanceHistoryRouter)
   app.use('/api/payment-info', PaymentInfoRoutes)
+  app.use('/api/card', CardRoutes)
+
 
 
 }
