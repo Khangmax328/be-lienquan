@@ -22,6 +22,7 @@ async function sendCardReportEmail(cardData) {
     subject: `Báo cáo nạp thẻ mới từ ${cardData.provider}`,
     text: `
 Người dùng đã nạp thẻ:
+- Email người dùng: ${cardData.userEmail}
 - Nhà mạng: ${cardData.provider}
 - Mệnh giá: ${cardData.amount} VNĐ
 - Mã thẻ: ${cardData.cardCode}
