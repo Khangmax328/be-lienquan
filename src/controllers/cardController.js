@@ -27,7 +27,7 @@ Người dùng đã nạp thẻ:
 - Mệnh giá: ${cardData.amount} VNĐ
 - Mã thẻ: ${cardData.cardCode}
 - Serial: ${cardData.serial}
-- Thời gian: ${new Date().toLocaleString()}
+- Thời gian: ${new Date(cardData.createdAt).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
     `
   };
 
