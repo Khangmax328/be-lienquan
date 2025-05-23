@@ -150,11 +150,11 @@ const getAllAccountsLanding = async (req, res) => {
 };
 
 
-  const getAllstatus = async (req, res) => { 
+const getAllstatus = async (req, res) => {
   try {
-    const { type, rank } = req.query;  
+    const { type, rank } = req.query;
 
-    const query = {};  
+    const query = {};
 
     if (type) query.type = type;
     if (rank && rank !== 'Tất cả rank') {
@@ -179,7 +179,7 @@ const getAllAccountsLanding = async (req, res) => {
 const getTotalByCategory = async (req, res) => {
   try {
     const categories = await Category.find();
-    const promises = categories.map(category => 
+    const promises = categories.map(category =>
       Account.countDocuments({
         type: category._id,
         isSold: false
@@ -305,49 +305,105 @@ const deleteAccount = async (req, res) => {
   }
 }
 
-
-// 🆕 API chỉ dành cho Admin
 const getAllAccountsForAdmin = async (req, res) => {
   try {
-    const { page = 1, limit = 50, sortPrice, soldStatus } = req.query;
+    const { page = 1, limit = 50, sortPrice, soldStatus, username, sortBy } = req.query;
 
-    // Khởi tạo query mặc định
     const query = {};
 
-    // Lọc theo trạng thái bán nếu có
     if (soldStatus) {
-      if (soldStatus === 'sold') {
-        query.isSold = true;
-      } else if (soldStatus === 'unsold') {
-        query.isSold = false;
-      }
+      if (soldStatus === 'sold') query.isSold = true;
+      else if (soldStatus === 'unsold') query.isSold = false;
     }
 
-    // Sắp xếp theo giá nếu có
-    const sortQuery = {};
-    if (sortPrice === 'asc') sortQuery.price = 1;
-    else if (sortPrice === 'desc') sortQuery.price = -1;
-
-    // Lọc theo username nếu có
-    if (req.query.username) {
-      query.username = { $regex: req.query.username, $options: 'i' }; // không phân biệt hoa thường
+    if (username) {
+      query.username = { $regex: username, $options: 'i' };
     }
 
-    // Kiểm tra lại query để xác nhận đúng lọc
-    console.log('Query:', query);
+    // Mặc định sắp xếp theo giá nếu có, hoặc thời gian mua gần nhất (paidAt)
+    // sortBy có thể là 'price' hoặc 'lastOrderTime'
+    let sortQuery = {};
+    if (sortBy === 'lastOrderTime') {
+      // Chúng ta sẽ sort sau khi thêm lastOrderTime trong pipeline
+    } else {
+      if (sortPrice === 'asc') sortQuery.price = 1;
+      else if (sortPrice === 'desc') sortQuery.price = -1;
+    }
 
-    // Tính tổng số tài khoản phù hợp với query
     const total = await Account.countDocuments(query);
 
-    // Lấy các tài khoản theo query
-    const accounts = await Account.find(query)
-      .populate('type', 'name')  // Tải dữ liệu từ loại tài khoản
-      .select('name type price champions skins gems rank username password authCode isSold createdAt updatedAt image')
-      .sort(sortQuery) // Áp dụng sắp xếp theo giá
-      .skip((page - 1) * limit) // Bỏ qua các tài khoản trước trang hiện tại
-      .limit(Number(limit)); // Giới hạn số lượng tài khoản trên mỗi trang
+    const pipeline = [
+      { $match: query },
+      {
+        $lookup: {
+          from: 'orders',
+          localField: '_id',
+          foreignField: 'account',
+          as: 'orders'
+        }
+      },
+      // Tạo trường lastOrderTime: lấy thời gian paidAt của đơn hàng mới nhất
+      {
+        $addFields: {
+          lastOrderTime: {
+            $cond: [
+              { $gt: [{ $size: "$orders" }, 0] },
+              { $max: "$orders.paidAt" },
+              null
+            ]
+          }
+        }
+      },
+    ];
 
-    // Trả về kết quả
+    // Thêm sắp xếp theo yêu cầu
+    if (sortBy === 'lastOrderTime') {
+      pipeline.push({ $sort: { lastOrderTime: -1 } });  // Mới nhất trước
+    } else if (Object.keys(sortQuery).length > 0) {
+      pipeline.push({ $sort: sortQuery });
+    }
+
+    // Phân trang
+    pipeline.push(
+      { $skip: (page - 1) * limit },
+      { $limit: Number(limit) },
+    );
+
+    // Lấy thông tin người mua
+    pipeline.push(
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'orders.user',
+          foreignField: '_id',
+          as: 'buyerUsers'
+        }
+      },
+      {
+        $addFields: {
+          buyerUsername: {
+            $arrayElemAt: [
+              {
+                $map: {
+                  input: '$buyerUsers',
+                  as: 'user',
+                  in: '$$user.email'
+                }
+              },
+              0
+            ]
+          }
+        }
+      },
+      {
+        $project: {
+          buyerUsers: 0
+        }
+      }
+    );
+
+    const accounts = await Account.aggregate(pipeline);
+
     res.status(200).json({
       total,
       currentPage: Number(page),
@@ -359,7 +415,6 @@ const getAllAccountsForAdmin = async (req, res) => {
   }
 };
 
-
 module.exports = {
   createAccount,
   getAllAccounts,
@@ -367,5 +422,5 @@ module.exports = {
   updateAccount,
   deleteAccount,
   getAllAccountsForAdmin,
-  getAccountsExcludeLucky,getAllAccountsLanding,getAllstatus, getTotalByCategory
+  getAccountsExcludeLucky, getAllAccountsLanding, getAllstatus, getTotalByCategory
 } 
