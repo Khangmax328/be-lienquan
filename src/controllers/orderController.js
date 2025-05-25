@@ -46,13 +46,30 @@ const createOrder = async (req, res) => {
 // Lấy danh sách đơn hàng của user
 const getMyOrders = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
     const orders = await Order.find({ user: req.user._id })
+      .skip(skip)
+      .limit(limit)
       .populate({ path: 'account', populate: { path: 'type', select: 'name' } })
-    res.status(200).json(orders)
+      .exec();
+
+    const totalOrders = await Order.countDocuments({ user: req.user._id });
+    const totalPages = Math.ceil(totalOrders / limit);
+
+    res.status(200).json({
+      orders,
+      totalPages,
+      currentPage: page,
+      totalOrders,
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi lấy đơn hàng', error: err.message })
+    res.status(500).json({ message: 'Lỗi lấy đơn hàng', error: err.message });
   }
-}
+};
+
 
 // Lấy chi tiết đơn hàng
 const getOrderDetails = async (req, res) => {
