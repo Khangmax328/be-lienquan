@@ -3,7 +3,7 @@ const router = express.Router()
 const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware')
 
 const User = require('../models/UserModel')
-const { updatePassword, getUserProfile, getTopBuyers } = require('../controllers/userController')
+const { updatePassword, getUserProfile, getTopBuyers, addBalanceToUser } = require('../controllers/userController')
 
 router.get('/all', verifyToken, verifyAdmin, async (req, res) => {
   try {
@@ -42,5 +42,7 @@ router.put('/update-balance', verifyToken, verifyAdmin, async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error: err.message });
   }
 });
+
+router.put('/:id/add-balance',verifyToken, verifyAdmin, addBalanceToUser );
 
 module.exports = router

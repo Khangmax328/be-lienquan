@@ -68,7 +68,26 @@ const getAllUsers = async (req, res) => {
     
 
 };
+const addBalanceToUser = async (req, res) => {
+  try {
+    const userId = req.params.id;  // id user cần cộng tiền
+    const { amount } = req.body;
 
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: 'Số tiền cộng phải lớn hơn 0' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+
+    user.balance = (user.balance || 0) + amount;
+    await user.save();
+
+    res.status(200).json({ message: 'Cộng tiền thành công', balance: user.balance });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi server khi cộng tiền', error: err.message });
+  }
+};
 
 // Admin: xoá user
 const deleteUser = async (req, res) => {
@@ -150,5 +169,5 @@ module.exports = {
   updateUser,
   getUserProfile,
   updatePassword,
-  getTopBuyers 
+  getTopBuyers, addBalanceToUser
 }
