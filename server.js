@@ -13,7 +13,8 @@ const allowedOrigins = [
   "http://www.shopkhanglienquan.com",
   "https://www.shopkhanglienquan.com",
   "https://fe-lienquan.onrender.com",
-  "https://lienquanshop-97dac72c4429.herokuapp.com"
+  "https://lienquanshop-97dac72c4429.herokuapp.com",
+  "https://lienquan-bf15961a4df1.herokuapp.com"
 ];
 
 // Middleware redirect domain gốc sang www

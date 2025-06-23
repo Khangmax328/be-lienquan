@@ -12,7 +12,8 @@ const {
   getAccountsExcludeLucky,
   getAllAccountsLanding,
   getAllstatus,
-  getTotalByCategory
+  getTotalByCategory,
+  deleteAccountsByType
 } = require('../controllers/accountController')
 
 // [POST] Tạo acc – chỉ admin
@@ -37,6 +38,7 @@ router.get('/totalByCategory', getTotalByCategory);
 router.get('/:id', getAccountById)
 router.put('/:id',verifyToken, verifyAdmin, updateAccount)
 router.delete('/:id',verifyToken, verifyAdmin, deleteAccount)
+router.delete('/delete-accounts-by-type/:typeId', verifyToken, verifyAdmin,deleteAccountsByType);
+
 
 module.exports = router
-// getAllAccountsLanding

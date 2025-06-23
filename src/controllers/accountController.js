@@ -305,6 +305,44 @@ const deleteAccount = async (req, res) => {
   }
 }
 
+const deleteAccountsByType = async (req, res) => {
+  try {
+    if (!req.user?.isAdmin) {
+      return res.status(403).json({ message: 'Bạn không có quyền xoá tài khoản' });
+    }
+
+    const { typeId } = req.params;
+
+    // Lấy tất cả các tài khoản thuộc loại (typeId) này
+    const accountsToDelete = await Account.find({ type: typeId });
+
+    if (accountsToDelete.length === 0) {
+      return res.status(404).json({ message: 'Không tìm thấy tài khoản nào thuộc loại này' });
+    }
+
+    // Xóa ảnh trên Cloudinary
+    for (const acc of accountsToDelete) {
+      if (acc.image?.public_id) {
+        await cloudinary.uploader.destroy(acc.image.public_id);
+      }
+      for (const img of acc.images) {
+        if (img.public_id) {
+          await cloudinary.uploader.destroy(img.public_id);
+        }
+      }
+    }
+
+    // Xóa các tài khoản
+    await Account.deleteMany({ type: typeId });
+
+    res.status(200).json({ message: 'Đã xoá tất cả tài khoản thuộc loại này cùng với ảnh' });
+  } catch (error) {
+    console.error('Lỗi khi xoá tài khoản:', error);
+    res.status(500).json({ message: 'Lỗi xoá tài khoản', error: error.message });
+  }
+};
+
+
 const getAllAccountsForAdmin = async (req, res) => {
   try {
     const { page = 1, limit = 50, sortPrice, soldStatus, username, sortBy } = req.query;
@@ -422,5 +460,5 @@ module.exports = {
   updateAccount,
   deleteAccount,
   getAllAccountsForAdmin,
-  getAccountsExcludeLucky, getAllAccountsLanding, getAllstatus, getTotalByCategory
+  getAccountsExcludeLucky, getAllAccountsLanding, getAllstatus, getTotalByCategory, deleteAccountsByType
 } 
