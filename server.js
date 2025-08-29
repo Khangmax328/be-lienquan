@@ -8,13 +8,11 @@ const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "http://shopkhanglienquan.com",
+  "https://fe-lienquan.vercel.app",
+  "https://fe-lienquan.onrender.com", 
+  "https://fe-lienquan-hpk6rzk9h-khangmax328s-projects.vercel.app",
+  "https://www.shopkhanglienquan.com", 
   "https://shopkhanglienquan.com",
-  "http://www.shopkhanglienquan.com",
-  "https://www.shopkhanglienquan.com",
-  "https://fe-lienquan.onrender.com",
-  "https://lienquanshop-97dac72c4429.herokuapp.com",
-  "https://lienquan-bf15961a4df1.herokuapp.com"
 ];
 
 // Middleware redirect domain gốc sang www

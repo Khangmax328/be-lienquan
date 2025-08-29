@@ -8,21 +8,16 @@ const accountSchema = new mongoose.Schema({
   skins: { type: Number, default: 0 },
   gems: { type: Number, default: 0 },
   rank: { type: String, default: '' },
-
-  // Ảnh đại diện (hiển thị ở Home)
   image: {
     url: String,
     public_id: String,
   },
-
-  // Danh sách ảnh chi tiết
   images: [
     {
       url: String,
       public_id: String,
     }
   ],
-
   username: { type: String, required: true },
   password: { type: String, required: true },
   authCode: { type: String },
